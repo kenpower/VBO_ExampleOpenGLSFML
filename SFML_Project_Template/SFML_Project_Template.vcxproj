@@ -77,7 +77,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="frag.glsl" />
     <None Include="ReadMe.txt" />
+    <None Include="vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />

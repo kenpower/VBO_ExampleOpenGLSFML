@@ -39,12 +39,17 @@ int main()
 	// Create a clock for measuring time elapsed     
 	sf::Clock Clock; 
      
+	sf::Shader shader;
+	if(!shader.loadFromFile("..\\SFML_Project_Template\\vertex.glsl","..\\SFML_Project_Template\\frag.glsl")){
+	  std::cout << "Error:\n"<<"loading shaders";
+	};
 
+	shader.bind();
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
 	{
 		/* Problem: glewInit failed, something is seriously wrong. */
-		std::cout << "Error:\n", glewGetErrorString(err);
+		std::cout << "Error:\n" << glewGetErrorString(err);
  
 
 	}
@@ -78,6 +83,7 @@ int main()
 // each triplet of integer, represents a triangle, each integer is an index into the vertex array
 
 	bool VBO=true;
+	//VBO=false;
 	//glEnableClientState(GL_VERTEX_ARRAY); // we want to use vertex arrays for coordinate info
 
 	if(!VBO){
@@ -92,6 +98,22 @@ int main()
 		glBufferData( GL_ARRAY_BUFFER, 12*3*sizeof(float), vertices, GL_STATIC_DRAW);
 			
 		//glVertexPointer( 3, GL_FLOAT, 0, (char *) NULL );       // Set The Vertex Pointer To The Vertex 
+		glEnableVertexAttribArray(0);                                               //ENABLE VERTEX POSITION
+	    glVertexAttribPointer(  //describe the format of the data in the buffer
+				0,//index of the attribute
+				3, //num of values per vertex (num coordinates)
+				GL_FLOAT, //type of coord
+				GL_FALSE, //should they be normalized?
+				0,//stride
+				0);    //offset to first attribute in array
+
+		// create index buffer
+		unsigned int indexBO;
+		glGenBuffers( 1, &indexBO );                  // Get A Valid Name
+		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, indexBO );         // Bind The Buffer
+		// Load The Data
+		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*20*3, triangles, GL_STATIC_DRAW);
+
 	}
     // Start game loop 
     while (App.isOpen()) 
@@ -130,15 +152,7 @@ int main()
        glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
           
 	   if(VBO){
-			glEnableVertexAttribArray(0);                                               //ENABLE VERTEX POSITION
-			glVertexAttribPointer(  //describe the format of the data in the buffer
-				0,//index of the attribute
-				3, //num of values per vertex (num coordinates)
-				GL_FLOAT, //type of coord
-				GL_FALSE, //should they be normalized?
-				0,//stride
-				0);    //offset to first attribute in array
-			glDrawElements(GL_TRIANGLES, 20*3, GL_UNSIGNED_INT,triangles);
+			glDrawElements(GL_TRIANGLES, 20*3, GL_UNSIGNED_INT,0);
 			
 	   }
 	   else
