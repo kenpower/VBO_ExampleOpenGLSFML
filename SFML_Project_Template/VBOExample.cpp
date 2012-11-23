@@ -17,7 +17,10 @@
 #endif 
 #pragma comment(lib,"opengl32.lib") 
 #pragma comment(lib,"glu32.lib") 
+#pragma comment(lib,"glew32.lib") 
+
   
+#include <GL/glew.h>
 #include "SFML/Graphics.hpp" 
 #include "SFML/OpenGL.hpp" 
 #include <iostream> 
@@ -36,6 +39,15 @@ int main()
 	// Create a clock for measuring time elapsed     
 	sf::Clock Clock; 
      
+
+	GLenum err = glewInit();
+	if (GLEW_OK != err)
+	{
+		/* Problem: glewInit failed, something is seriously wrong. */
+		std::cout << "Error:\n", glewGetErrorString(err);
+ 
+
+	}
     //prepare OpenGL surface for HSR 
     glClearDepth(1.f); 
     glClearColor(0.3f, 0.3f, 0.3f, 0.f); //background colour
@@ -65,12 +77,22 @@ int main()
 	GLuint triangles[][3]={ {1,4,0}, {4,9,0},   {4,5,9},   {8,5,4},   {1,8,4},{1,10,8},  {10,3,8},   {8,3,5},   {3,2,5},   {3,7,2},{3,10,7},  {10,6,7},   {6,11,7},  {6,0,11},  {6,1,0}, {10,1,6},  {11,0,9},   {2,11,9},   {5,2,9},   {11,2,7}};
 // each triplet of integer, represents a triangle, each integer is an index into the vertex array
 
-	
-	glEnableClientState(GL_VERTEX_ARRAY); // we want to use vertex arrays for coordinate info
-	
-	glVertexPointer(3,GL_FLOAT,0,(GLvoid*)vertices);	// give openGL our array of vertices
-  
-  
+	bool VBO=true;
+	//glEnableClientState(GL_VERTEX_ARRAY); // we want to use vertex arrays for coordinate info
+
+	if(!VBO){
+		glEnableClientState(GL_VERTEX_ARRAY); // we want to use vertex arrays for coordinate info
+
+		glVertexPointer(3,GL_FLOAT,0,(GLvoid*)vertices);	// give openGL our array of vertices
+	}else{
+		unsigned int vertexBO;
+		glGenBuffers( 1, &vertexBO );                  // Get A Valid Name
+		glBindBuffer( GL_ARRAY_BUFFER, vertexBO );         // Bind The Buffer
+		// Load The Data
+		glBufferData( GL_ARRAY_BUFFER, 12*3*sizeof(float), vertices, GL_STATIC_DRAW);
+			
+		//glVertexPointer( 3, GL_FLOAT, 0, (char *) NULL );       // Set The Vertex Pointer To The Vertex 
+	}
     // Start game loop 
     while (App.isOpen()) 
     { 
@@ -89,6 +111,9 @@ int main()
    
         } 
           
+		if(!App.isOpen()){
+			continue;
+		}
         //Prepare for drawing 
         // Clear color and depth buffer 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
@@ -104,7 +129,21 @@ int main()
 		
        glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
           
-	    glDrawElements(GL_TRIANGLES, 20*3, GL_UNSIGNED_INT,triangles);
+	   if(VBO){
+			glEnableVertexAttribArray(0);                                               //ENABLE VERTEX POSITION
+			glVertexAttribPointer(  //describe the format of the data in the buffer
+				0,//index of the attribute
+				3, //num of values per vertex (num coordinates)
+				GL_FLOAT, //type of coord
+				GL_FALSE, //should they be normalized?
+				0,//stride
+				0);    //offset to first attribute in array
+			glDrawElements(GL_TRIANGLES, 20*3, GL_UNSIGNED_INT,triangles);
+			
+	   }
+	   else
+			 glDrawElements(GL_TRIANGLES, 20*3, GL_UNSIGNED_INT,triangles);
+	
   
         // Finally, display rendered frame on screen 
         App.display(); 
